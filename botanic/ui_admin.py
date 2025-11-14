@@ -19,10 +19,6 @@ class AdminWin(tk.Toplevel):
         nb.add(frm_plant, text="植物维护")
         PlantCRUD(frm_plant)
 
-        frm_tax = ttk.Frame(nb)
-        nb.add(frm_tax, text="分类体系")
-        TaxonomyCRUD(frm_tax)
-
         frm_zone = ttk.Frame(nb)
         nb.add(frm_zone, text="园区维护")
         ZoneCRUD(frm_zone)
@@ -30,6 +26,10 @@ class AdminWin(tk.Toplevel):
         frm_stock = ttk.Frame(nb)
         nb.add(frm_stock, text="库存维护")
         StockCRUD(frm_stock)
+        
+        frm_pwd = ttk.Frame(nb)
+        nb.add(frm_pwd, text="修改密码")
+        ChangePwd(frm_pwd, self.user_id, self.username)
 
 class PlantCRUD:
     def __init__(self, parent):
@@ -60,29 +60,37 @@ class PlantCRUD:
                                                 r["habitat"],   r["bloom_period"],  r["use_type"]))
 
     def add_plant(self):
-        PlantEdit(self, mode="add")
+        PlantEdit(self.parent, self, mode="add")
+        self.refresh()
 
     def edit_plant(self):
-        pid = self.tree.focus()
-        if not pid:
+        selected_item = self.tree.focus()
+        if not selected_item:
             messagebox.showwarning("提示", "请先选中一行")
             return
-        PlantEdit(self, mode="edit", pid=pid)
+
+        values = self.tree.item(selected_item, "values")
+        plant_id = values[0]
+        PlantEdit(self.parent, self, mode="edit", pid=plant_id)
+        self.refresh()
 
     def del_plant(self):
-        pid = self.tree.focus()
-        if not pid:
+        selected_item = self.tree.focus()
+        if not selected_item:
             messagebox.showwarning("提示", "请先选中一行")
             return
+
+        values = self.tree.item(selected_item, "values")
+        plant_id = values[0]
+
         if messagebox.askyesno("确认", "确定删除？"):
-            sql_execute("DELETE FROM plant WHERE plant_id=%s", (pid,))
+            sql_execute("DELETE FROM plant WHERE plant_id=%s", (plant_id,))
             self.refresh()
 
-
 class PlantEdit(tk.Toplevel):
-    def __init__(self, master: PlantCRUD, mode: str, pid=None):
-        super().__init__()
-        self.master = master
+    def __init__(self, parent_wnd, crud_instance, mode: str, pid=None):
+        super().__init__(parent_wnd)
+        self.crud = crud_instance
         self.mode = mode
         self.pid = pid
         self.title("新增/编辑植物")
@@ -129,13 +137,7 @@ class PlantEdit(tk.Toplevel):
                      origin=%s, habitat=%s, bloom_period=%s, use_type=%s WHERE plant_id=%s"""
             sql_execute(sql, (gid, *vals, self.pid))
         self.destroy()
-        self.master.refresh()
-        
-
-
-class TaxonomyCRUD:
-    def __init__(self, parent):
-        ttk.Label(parent, text="分类体系维护界面可继续扩展：纲->目->科->属下拉联动").pack(pady=50)
+        self.crud.refresh()
 
 
 class ZoneCRUD:
@@ -166,29 +168,38 @@ class ZoneCRUD:
             self.tree.insert("", "end", values=(r["zone_id"], r["zone_name"], r["location"], r["intro"]))
 
     def add_zone(self):
-        ZoneEdit(self, mode="add")
+        ZoneEdit(self.parent, self, mode="add")
+        self.refresh()
 
     def edit_zone(self):
-        zid = self.tree.focus()
-        if not zid:
+        selected_item = self.tree.focus()
+        if not selected_item:
             messagebox.showwarning("提示", "请先选中一行")
             return
-        ZoneEdit(self, mode="edit", zid=zid)
+        
+        values = self.tree.item(selected_item, "values")
+        zone_id = values[0]
+        ZoneEdit(self.parent, self, mode="edit", zid=zone_id)
+        self.refresh()
 
     def del_zone(self):
-        zid = self.tree.focus()
-        if not zid:
+        selected_item = self.tree.focus()
+        if not selected_item:
             messagebox.showwarning("提示", "请先选中一行")
             return
-        if messagebox.askyesno("确认", "确定删除该园区？"):
-            sql_execute("DELETE FROM zone WHERE zone_id=%s", (zid,))
+
+        values = self.tree.item(selected_item, "values")
+        zone_id = values[0]
+
+        if messagebox.askyesno("确认", "确定删除？"):
+            sql_execute("DELETE FROM zone WHERE zone_id=%s", (zone_id,))
             self.refresh()
 
 
 class ZoneEdit(tk.Toplevel):
-    def __init__(self, master: ZoneCRUD, mode: str, zid=None):
-        super().__init__()
-        self.master = master
+    def __init__(self, parent_wnd, crud_instance, mode: str, zid=None):
+        super().__init__(parent_wnd)
+        self.crud = crud_instance
         self.mode = mode
         self.zid = zid
         self.title("新增/编辑园区")
@@ -221,7 +232,7 @@ class ZoneEdit(tk.Toplevel):
         else:
             sql_execute("UPDATE zone SET zone_name=%s, location=%s, intro=%s WHERE zone_id=%s", (*vals, self.zid))
         self.destroy()
-        self.master.refresh()
+        self.crud.refresh()
 
 class StockCRUD:
     def __init__(self, parent):
@@ -258,28 +269,36 @@ class StockCRUD:
                                                 r["quantity"],  r["planted_date"],  r["status"]))
 
     def add_stock(self):
-        StockEdit(self, mode="add")
+        StockEdit(self.parent, self, mode="add")
+        self.refresh()
 
     def edit_stock(self):
-        lid = self.tree.focus()
-        if not lid:
+        selected_item = self.tree.focus()
+        if not selected_item:
             messagebox.showwarning("提示", "请先选中一行")
             return
-        StockEdit(self, mode="edit", lid=lid)
+        
+        values = self.tree.item(selected_item, "values")
+        loc_id = values[0]
+        StockEdit(self.parent, self, mode="edit", lid=loc_id)
+        self.refresh()
 
     def del_stock(self):
-        lid = self.tree.focus()
-        if not lid:
+        selected_item = self.tree.focus()
+        if not selected_item:
             messagebox.showwarning("提示", "请先选中一行")
             return
+        
+        values = self.tree.item(selected_item, "values")
+        loc_id = values[0]
         if messagebox.askyesno("确认", "确定删除该库存记录？"):
-            sql_execute("DELETE FROM plant_location WHERE loc_id=%s", (lid,))
+            sql_execute("DELETE FROM plant_location WHERE loc_id=%s", (loc_id,))
             self.refresh()
 
 class StockEdit(tk.Toplevel):
-    def __init__(self, master: StockCRUD, mode: str, lid=None):
-        super().__init__()
-        self.master = master
+    def __init__(self, parent_wnd, crud_instance, mode: str, lid=None):
+        super().__init__(parent_wnd)
+        self.crud = crud_instance
         self.mode = mode
         self.lid = lid
         self.title("新增/编辑库存")
@@ -336,27 +355,29 @@ class StockEdit(tk.Toplevel):
             sql_execute("UPDATE plant_location SET plant_id=%s, zone_id=%s, quantity=%s, planted_date=%s, status=%s WHERE loc_id=%s",
                        (pid, zid, qty, dt, st, self.lid))
         self.destroy()
-        self.master.refresh()
+        self.crud.refresh()
 
-class ChangePwd(tk.Toplevel):
-    def __init__(self, user_id: int, username: str):
-        super().__init__()
+class ChangePwd(ttk.Frame):
+    def __init__(self, parent, user_id: int, username: str):
+        super().__init__(parent)
         self.user_id = user_id
         self.username = username
-        self.title("修改密码")
-        self.geometry("300x160")
-        self.resizable(False, False)
-        self.grab_set()
+        self.pack(fill="both", expand=True)
         self._build_ui()
 
     def _build_ui(self):
-        ttk.Label(self, text="新密码").grid(row=0, column=0, padx=15, pady=15, sticky="e")
+        frm = ttk.Frame(self)
+        frm.pack(pady=40)
+
+        ttk.Label(frm, text="新密码").grid(row=0, column=0, padx=15, pady=15, sticky="e")
         self.p1 = tk.StringVar()
-        ttk.Entry(self, textvariable=self.p1, show="*").grid(row=0, column=1)
-        ttk.Label(self, text="再输入").grid(row=1, column=0, padx=15, pady=5, sticky="e")
+        ttk.Entry(frm, textvariable=self.p1, show="*").grid(row=0, column=1)
+
+        ttk.Label(frm, text="再输入").grid(row=1, column=0, padx=15, pady=5, sticky="e")
         self.p2 = tk.StringVar()
-        ttk.Entry(self, textvariable=self.p2, show="*").grid(row=1, column=1)
-        ttk.Button(self, text="确认修改", command=self._save).grid(row=2, column=0, columnspan=2, pady=20)
+        ttk.Entry(frm, textvariable=self.p2, show="*").grid(row=1, column=1)
+
+        ttk.Button(frm, text="确认修改", command=self._save).grid(row=2, column=0, columnspan=2, pady=20)
 
     def _save(self):
         p1, p2 = self.p1.get(), self.p2.get()
@@ -365,4 +386,3 @@ class ChangePwd(tk.Toplevel):
             return
         sql_execute("UPDATE `user` SET password=%s WHERE user_id=%s", (p1, self.user_id))
         messagebox.showinfo("成功", "密码已修改")
-        self.destroy()
