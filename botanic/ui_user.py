@@ -13,7 +13,7 @@ class UserWin(tk.Toplevel):
         self.geometry("900x600")
         self._build_ui()
         self.refresh_plant_tree()
-
+        
     def _build_ui(self):
         top = ttk.Frame(self)
         top.pack(side="top", fill="x", padx=10, pady=10)
@@ -42,7 +42,7 @@ class UserWin(tk.Toplevel):
         self.inv_tree.pack(fill="both", expand=True, padx=5, pady=5)
 
         self.tree.bind("<<TreeviewSelect>>", self._on_plant_select)
-
+        
     def refresh_plant_tree(self):
         key = f"%{self.search_var.get().strip()}%"
         sql = """
@@ -55,11 +55,10 @@ class UserWin(tk.Toplevel):
         for item in self.tree.get_children():
             self.tree.delete(item)
         for r in rows:
-            self.tree.insert("", "end", values=(r["chinese_name"],
-                                                r["description"], r["origin"],
-                                                r["habitat"], r["bloom_period"], r["use_type"]),
-                             iid=r["plant_id"])
-
+            self.tree.insert("", "end", values=(r["chinese_name"],  r["description"],   r["origin"],
+                                                r["habitat"],       r["bloom_period"],  r["use_type"]),
+                                                                                    iid=r["plant_id"])
+            
     def _on_plant_select(self, _event):
         pid = self.tree.focus()
         if not pid:
@@ -76,7 +75,7 @@ class UserWin(tk.Toplevel):
         for r in rows:
             self.inv_tree.insert("", "end", values=(r["zone_name"], r["location"],
                                                     r["quantity"], r["planted_date"], r["status"]))
-
+            
     def _change_pwd(self):
         from botanic.ui_admin import ChangePwd
         ChangePwd(self.user_id, self.username)
