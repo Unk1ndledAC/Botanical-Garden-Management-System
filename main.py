@@ -1,6 +1,7 @@
 from botanic.ui_login import LoginWin
 from botanic.db import sql_execute, init_schema
 import traceback
+
 def cleanup_guest_users():
     try:
         sql_execute("DELETE FROM `user` WHERE role = 'guest'")
@@ -17,3 +18,4 @@ if __name__ == '__main__':
     except Exception as e:
         traceback.print_exc()
         print(f"[System] 程序异常退出：{e}")
+
