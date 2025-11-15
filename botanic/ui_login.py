@@ -3,8 +3,8 @@ from tkinter import ttk, messagebox
 from botanic.db import sql_query
 from botanic.models import insert_guest_user
 from botanic.ui_user import UserWin        
-from botanic.ui_admin import AdminWin       
-
+from botanic.ui_admin import AdminWin
+   
 class LoginWin(tk.Tk):                     
     def __init__(self):
         super().__init__()
@@ -12,7 +12,7 @@ class LoginWin(tk.Tk):
         self.geometry("300x200")
         self.resizable(False, False)
         self._build_ui()
-
+        
     def _build_ui(self):
         ttk.Label(self, text="用户名").grid(row=0, column=0, padx=15, pady=10, sticky="e")
         ttk.Label(self, text="密码").grid(row=1, column=0, padx=15, pady=5, sticky="e")
@@ -23,7 +23,7 @@ class LoginWin(tk.Tk):
 
         ttk.Button(self, text="登录", command=self._check_login).grid(row=2, column=0, columnspan=2, pady=10)
         ttk.Button(self, text="访客入园", command=self._guest_entry).grid(row=3, column=0, columnspan=2, pady=5)
-
+        
     def _check_login(self):
         user, pwd = self.user_var.get().strip(), self.pwd_var.get().strip()
         if not user or not pwd:
@@ -34,7 +34,7 @@ class LoginWin(tk.Tk):
             messagebox.showerror("错误", "用户名或密码错误")
             return
         self._enter_system(row[0]["user_id"], row[0]["role"], user)
-
+        
     def _guest_entry(self):
         GuestRegister(self)
 
@@ -45,7 +45,8 @@ class LoginWin(tk.Tk):
             else:
                 top = UserWin(uid, username)
         except Exception as e:                  
-            messagebox.showerror("初始化失败", f"无法打开主界面：{e}")
+            messagebox.showerror("错误", "初始化失败，无法打开主界面")
+            print(f"[System] {e}")
             return                              
         self.withdraw()
         top.focus_force()
@@ -82,7 +83,8 @@ class GuestRegister(tk.Toplevel):
         try:
             uid = insert_guest_user(name, email)
         except Exception as e:
-            messagebox.showerror("错误", f"登记失败：{e}")
+            messagebox.showerror("错误", f"登记失败，请重试或使用其他用户名登录")
+            print(f"[System] {e}")
             return
         self.destroy()
         self.master._enter_system(uid, "guest", name)
