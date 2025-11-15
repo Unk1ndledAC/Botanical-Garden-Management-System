@@ -30,13 +30,12 @@ class AdminWin(tk.Toplevel):
         frm_pwd = ttk.Frame(nb)
         nb.add(frm_pwd, text="修改密码")
         ChangePwd(frm_pwd, self.user_id, self.username)
-
+        
 class PlantCRUD:
     def __init__(self, parent):
         self.parent = parent
         self._build_ui()
         self.refresh()
-
     def _build_ui(self):
         top = ttk.Frame(self.parent)
         top.pack(side="top", fill="x", padx=5, pady=5)
@@ -50,7 +49,6 @@ class PlantCRUD:
             self.tree.heading(col, text=col)
             self.tree.column(col, width=100, anchor="w")
         self.tree.pack(fill="both", expand=True, padx=5, pady=5)
-
     def refresh(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -58,11 +56,10 @@ class PlantCRUD:
         for r in rows:
             self.tree.insert("", "end", values=(r["plant_id"],  r["chinese_name"],  r["description"], r["origin"], 
                                                 r["habitat"],   r["bloom_period"],  r["use_type"]))
-
     def add_plant(self):
         PlantEdit(self.parent, self, mode="add")
         self.refresh()
-
+        
     def edit_plant(self):
         selected_item = self.tree.focus()
         if not selected_item:
@@ -139,7 +136,6 @@ class PlantEdit(tk.Toplevel):
         self.destroy()
         self.crud.refresh()
 
-
 class ZoneCRUD:
     def __init__(self, parent):
         self.parent = parent
@@ -194,7 +190,6 @@ class ZoneCRUD:
         if messagebox.askyesno("确认", "确定删除？"):
             sql_execute("DELETE FROM zone WHERE zone_id=%s", (zone_id,))
             self.refresh()
-
 
 class ZoneEdit(tk.Toplevel):
     def __init__(self, parent_wnd, crud_instance, mode: str, zid=None):
