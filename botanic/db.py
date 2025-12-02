@@ -58,7 +58,7 @@ def init_schema(sql_file='schema.sql', data_file='data.sql'):
     create_database_if_not_exists()
 
     try:
-        with pymysql.connect(**DB_CFG, cursorclass=DictCursor) as conn:
+        with _get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT VERSION()")
                 version = cur.fetchone()['VERSION()']
@@ -73,7 +73,7 @@ def init_schema(sql_file='schema.sql', data_file='data.sql'):
 
         paragraphs = re.split(r'^\s*DELIMITER\s+(\S+)\s*$', content, flags=re.M)
         delimiter = ';'
-        conn = pymysql.connect(**DB_CFG, cursorclass=DictCursor)
+        conn = _get_conn()
         try:
             with conn.cursor() as cur:
                 for para in paragraphs:
@@ -99,7 +99,7 @@ def init_schema(sql_file='schema.sql', data_file='data.sql'):
         print(f"[DB] 未找到 {schema_path}，跳过建表")
 
     if os.path.exists(data_path):
-        conn = pymysql.connect(**DB_CFG, cursorclass=DictCursor)
+        conn = _get_conn()
         try:
             with conn.cursor() as cur:
                 cur.execute("SELECT COUNT(*) AS c FROM `user`")
